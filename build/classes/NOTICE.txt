@@ -1,0 +1,42 @@
+Apache Struts
+Copyright 2000-2011 The Apache Software Foundation
+
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+
+整合structs2
+加入struts2-spring-plugin-2.3.31.jar
+
+birth一直为空
+1.老师讲的：java.util.Date=com.atguigu.ssh.converters.SSHDateConverter
+birth一直未转换成功
+结果是这个文件的错误
+改为下面
+java.sql.Date=com.atguigu.ssh.converters.SSHDateConverter
+
+2.
+return dateFormat.parse(s[0])改为
+return dateFormat.format(dateFormat.parse(s[0]));
+控制台信息
+convertFromString
+Date.class == cla
+true
+dateFormat.parse(s[0]):Sun Oct 12 00:00:00 CST 1997
+dateFormat.format(dateFormat.parse(s[0])):1997-10-12
+
+不行，经检验，变成了String类型，改
+dateFormat.parse(s[0]):Sat Oct 12 00:00:00 CST 1996class java.util.Date
+dateFormat.format(dateFormat.parse(s[0])):1996-10-12class java.lang.String
+
+成功
+dateFormat.parse(s[0]):Sun Oct 12 00:00:00 CST 1997class java.util.Date
+
+问题是java.sql.Date格式与java.util.Date格式不统一，在StrutsTypeConverter中需要convertFromString中的
+dateFormat.parse(s[0])类型为java.util.Date，需要转换成java.sql.Date，即return new Date(dateFormat.parse(s[0]).getTime());
+
+Illegal attempt to associate a collection with two open sessions
+在Nhibernate的操作中，如果load一个对象，然后又update或者saveOrUpdate一个对象，则会引发这个异常。
+处理办法：
+方法一：将update或者saveOrUpdate改成merge
+方法二：修改session为singleSession
+

@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<meta charset="UTF-8"> 
+	<title>Media</title>
+	<link rel="stylesheet" href="css/style.css" type="text/css">
+	<script type="text/javascript" src="js/vue-resource.js" ></script>
+	<script type="text/javascript" src="js/vue.js" ></script>
+	<script type="text/javascript" src="js/jquery-3.1.1.js" ></script>
+</head>
+<body>
+	<div id="background">
+		<div class="container">
+			<span id="message">{{ msg }}</span>
+		</div>
+		<div class="container">
+			<div class="account-info">
+				<span v-if="userLoginName">{{ userLoginName }} | <a href="#" @click="logout">注销</a></span>
+			</div>
+		</div>
+		<div id="header">
+			<div>
+				<div>
+					<a href="index.html" class="logo"><img src="images/logo.png" alt=""></a>
+					<ul>
+						<li>
+							<a href="index.html" id="menu1">home</a>
+						</li>
+						<li class="selected">
+							<a href="media.html" id="menu2">media</a>
+						</li>
+						<li>
+							<a href="games.html" id="menu3">games</a>
+						</li>
+						<li>
+							<a href="about.html" id="menu4">about</a>
+						</li>
+						<li>
+							<a href="login.html" id="menu5">login</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="body">
+			<div>
+				<div>
+					<div class="media">
+						<div>
+							<div>
+								<h3>wallpapers</h3>
+								<ul>
+									<!-- <li>
+										<a href="#" class="figure"><img src="images/wallpaper1.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li>
+									<li>
+										<a href="#" class="figure"><img src="images/wallpaper2.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li>
+									<li>
+										<a href="#" class="figure"><img src="images/wallpaper3.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li>
+									<li>
+										<a href="#" class="figure"><img src="images/wallpaper4.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li> -->
+									<button @click="uppage" style="font-size: 20px ;color: #000000;">上一页</button>
+									<span>{{pageNum}}</span>
+									<button @click="downpage" style="font-size: 20px ;color: #000000;">下一页</button>
+									<li v-for="(picture,index) in pictures">
+										<div v-if="index<pageNum*4 && index>=(pageNum-1)*4">
+											<a href="#" class="figure"><img v-bind:src="picture.picturePos" alt=""></a>
+											<p><span>{{picture.pictureName}}</span></p>
+										</div>
+									</li>
+								</ul>
+							</div>
+							<div>
+								<h3>videos</h3>
+								<ul>
+									<!-- <li>
+										<a href="#" class="figure"><img src="images/video1.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li>
+									<li>
+										<a href="#" class="figure"><img src="images/video2.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li>
+									<li>
+										<a href="#" class="figure"><img src="images/video3.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li>
+									<li>
+										<a href="#" class="figure"><img src="images/video4.jpg" alt=""></a>
+										<span><a href="#">This is just a place holder</a></span>
+									</li> -->
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="footer">
+			<div>
+				
+				<p>
+					@ copyright 2012. All rights reserved.
+				</p>
+			</div>
+		</div>
+	</div>
+</body>
+<!-- js/vue-resource.js不能放上面（用不了），只能放这里 -->
+<script type="text/javascript" src="js/vue-resource.js" ></script>
+<script type="text/javascript">
+	var app = new Vue({
+			el:'#background',
+			data:{
+					logoutUrl: 'http://localhost:8080/GameDemo/userlogout',
+					msg: '',
+					userLoginName: '',
+					pageNum:'1',
+					result: '',
+					pictures:[],
+					getUrl:"http://localhost:8080/GameDemo/showpictures",
+					userLoginName:''
+			}, 
+			mounted: function () {
+				console.log("mounted")
+				this.userLoginName = sessionStorage.getItem('userLoginName')
+				console.log(this.userLoginName)
+			  this.$nextTick(function () {
+			    // 代码保证 this.$el 在 document 中
+			    console.log("nextTick")
+				this.getPictures()
+			  })
+			},
+			methods:{
+				getPictures:function(){
+					this.$http.get(this.getUrl)
+					.then(function(response){
+						this.pictures = response.data;
+						console.log("pictures:")
+						console.log(this.pictures)
+					},function(reserr){
+						console.log(reserr)
+					})
+					.catch(function(response) {
+            			console.log(response)
+        			})
+				},
+				uppage:function() {
+					this.pageNum--;
+					if(this.pageNum<1)
+						this.pageNum=1;
+				},
+				downpage:function() {
+					this.pageNum++;
+					if(this.pageNum>this.pictures.length/4) 
+						this.pageNum--;
+				},
+				logout: function() {
+					var vm = this
+					vm.msg = ''
+					vm.result = ''
+	
+					$.ajax({
+						url: vm.logoutUrl,
+						type: 'POST',
+						dataType: 'json',
+						success: function(data) {
+	
+							vm.msg = '注销成功！'
+							vm.userLoginName = ''
+	
+							sessionStorage.removeItem('userLoginName')
+							sessionStorage.removeItem('accessToken')
+							
+						},
+						error: vm.requestError
+					})
+				}
+			}
+		}) 
+</script>
+</html>

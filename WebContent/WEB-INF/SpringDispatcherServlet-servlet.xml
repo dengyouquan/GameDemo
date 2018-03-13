@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="  
+    http://www.springframework.org/schema/beans  
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd 
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd ">  
+    <!-- Multiple annotations found at this line: 	- Referenced file contain -->
+    <!--  把http://www.springframework.org/schema/context/spring-context-3.2.xsd版本号去掉  -->
+    
+    <!-- 配置自动扫描的包 -->
+    <context:component-scan base-package="com.game"></context:component-scan>
+    
+    
+   <!--  配置视图解析器：如何把Handler方法返回值解析为视图 :-->
+   <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+    <property name="prefix" value="/WEB-INF/views/"/>  
+    <property name="suffix" value=".jsp"/>
+    </bean>
+    
+    <!-- 配置视图 BeanNameViewResolver 解析器 使用视图的名字解析视图 -->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+    <!-- order视图解析器优先级，order越小优先级越高 -->
+    	<property name="order" value="1"></property>
+    </bean>
+    
+    <!-- 配置国际化资源文件 -->
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+	   <!-- 国际化信息所在的文件名 -->                     
+	   <property name="basename" value="i18n" />
+	   <!-- 如果在国际化资源文件中找不到对应代码的信息，就用这个代码作为名称  -->               
+	   <property name="useCodeAsDefaultMessage" value="true" />           
+	</bean>  
+	
+	<!-- 配置直接转发的页面 可以无需经过Handler-->
+	<mvc:view-controller path="/success" view-name="success"/>
+	<!-- 在实际开发中都需要配置<mvc:annotation-driven/>标签 ，不配mvc:annotation-driven
+	但配mvc:view-controller会点击超链接会报错-->
+	
+	<!-- 引起乱码原因为spring mvc使用的默认处理字符串编码为ISO-8859-1，
+	具体参考org.springframework.http.converter.StringHttpMessageConverter类中
+	public static final Charset DEFAULT_CHARSET = Charset.forName("ISO-8859-1"); -->
+	<mvc:annotation-driven/> 
+     
+	<!-- springMVC处理静态资源 -->
+	<mvc:default-servlet-handler/>
+</beans>

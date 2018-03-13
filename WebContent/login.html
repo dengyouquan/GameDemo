@@ -1,0 +1,377 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Blog</title>
+	<link rel="stylesheet" href="css/style.css" type="text/css">
+	<style>
+		.usermanager{
+			width: 100px;
+			height: 30px;
+			margin-left: 100px;
+			font-size: large;
+			color: #070707;
+		}
+	</style>
+</head>
+<body>
+	<div id="background">
+		<div class="container">
+			<span id="message">{{ msg }}</span>
+		</div>
+		<div class="container">
+			<div class="account-info">
+				<span v-if="userLoginName">{{ userLoginName }} | <a href="#" @click="logout">注销</a></span>
+			</div>
+		</div>
+		<div id="header">
+			<div>
+				<div>
+					<a href="index.html" class="logo"><img src="images/logo.png" alt=""></a>
+					<ul>
+						<li>
+							<a href="index.html" id="menu1">home</a>
+						</li>
+						<li>
+							<a href="media.html" id="menu2">media</a>
+						</li>
+						<li>
+							<a href="games.html" id="menu3">games</a>
+						</li>
+						<li>
+							<a href="about.html" id="menu4">about</a>
+						</li>
+						<li class="selected">
+							<a href="login.html" id="menu5">login</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="body">
+			
+			<label class="container" v-if="userLoginName==null | userLoginName==''">
+				<div class="left" style="float: left;">
+					<div class="form-group">
+						<label style="font-size: 20px ;color: #FFFFFF;">用户名字</label>
+						<input type="text" v-model="registerModel.userName" style="border: none; width: 200px;height: 25px;margin: 10px;"/>
+					</div>
+					<div class="form-group">
+						<label style="font-size: 20px ;color: #FFFFFF;">用户密码</label>
+						<input type="password" v-model="registerModel.pwd" style="border: none; width: 200px;height: 25px;margin: 10px;"/>
+					</div>
+
+					<!--<div class="form-group">
+						<label>确认密码</label>
+						<input type="text" v-model="registerModel.confirmPassword" />
+					</div>-->
+
+					<div class="form-group" >
+						<label></label>
+						<input @click="register" type="submit" value="注册" style="font-size: 20px ;color: #000000; border: none;">
+						<!--<button @click="register">注册</button>-->
+					</div>
+				</div>
+				<div class="right">
+					<div class="form-group">
+						<label style="font-size: 20px ;color: #FFFFFF;">用户名字：</label>
+						<input type="text" v-model="loginModel.userName" placeholder="请输入用户名:" style="border: none; width: 200px;height: 25px;margin: 10px;"/>
+					</div>
+					<div class="form-group">
+						<label style="font-size: 20px ;color: #FFFFFF;">用户密码：</label>
+						<input type="password" v-model="loginModel.pwd" placeholder="请输入密码:" style="border: none; width: 200px;height: 25px;margin: 10px;"/>
+					</div>
+					<div class="form-group">
+						<label></label>
+						<input @click="login" type="submit" value="登录" style="font-size: 20px ;color: #000000; border: none;">
+						<!--<button @click="login">登录</button>-->
+					</div>
+				</div>
+				
+				
+			</label>
+			<label v-else="userLoginName!=null">
+				<li class="selected">
+					<div class="usermanager">
+						<a v-bind:href="'usermanager.html?uid='+userLoginId"  id="menu5" style="font-size: 20px ;color: #FFFFFF;">用户信息</a>
+					</div>
+					<div class="usermanager">
+						<a href="manager.html" id="menu5" style="font-size: 20px ;color: #FFFFFF;">添加游戏</a>
+					</div>
+					<div class="usermanager">
+						<a href="usergame.html" id="menu5" style="font-size: 20px ;color: #FFFFFF;">显示游戏</a>
+					</div>
+					<div class="usermanager">
+						<a href="#" @click="showcomments" id="menu5" style="font-size: 20px ;color: #FFFFFF;">查看评论</a>
+					</div>
+					<div class="usermanager">
+						<a href="#" @click="showpwddiv" id="menu5" style="font-size: 20px ;color: #FFFFFF;">更改密码</a>
+					</div>
+					<label style="font-size: 20px ;color: #FFFFFF;">{{pwdmsg}}</label>
+				</li>
+			</label>
+			
+			<label id="comment" v-if="show">
+				<h1 style="font-size: 20px ;color: #FFFFFF;" style="font-size: 20px ;color: #FFFFFF;">评论</h1>
+				<div>
+					<li v-for="comment in comments">
+						<p style="font-size: 20px ;color: #FFFFFF;"><span style="font-size: 20px ;color: #FFFFFF;">评论游戏:<a v-bind:href="'gamedetail.html?id='+comment.game.id" style="font-size: 20px ;color: #FFFFFF;">{{comment.game.gameName}}</a></span></p>
+						<p style="font-size: 20px ;color: #FFFFFF;"><span style="font-size: 20px ;color: #FFFFFF;">评论时间:{{new Date(comment.commentDate).toLocaleString()}}</span></p>
+						<p style="font-size: 20px ;color: #FFFFFF;"><span style="font-size: 20px ;color: #FFFFFF;">评论内容:{{comment.content}}</span></p>
+						<button @click="deleteusercomment(comment.id)" >删除</button>
+					</li>
+				</div>
+			</label>
+			
+			<label v-if="showpwd">
+				<label style="font-size: 20px ;color: #FFFFFF;">原密码：</label>
+				<input type="password" v-model="oldpwd" placeholder="请输入原密码:" style="border: none; width: 200px;height: 25px;margin: 10px;"/>
+				<label style="font-size: 20px ;color: #FFFFFF;">新密码：</label>
+				<input type="password" v-model="pwd" placeholder="请输入新密码:" style="border: none; width: 200px;height: 25px;margin: 10px;"/>
+				<button @click="updatepwd" style="font-size: 20px ;color: #FFFFFF;">更改</button>
+			</label>
+<!--			<div>
+				<form class="userform" id="userform"  action="userlogin"  autocomplete="on" method="post" enctype="multipart/form-data"> 
+	             	<p> 
+	                    <label for="userName" class="uname">用户名字:</label>
+	                    <input id="usernamesignup" name="userName" required="required" type="text" placeholder="请输入用户名字" />
+	                </p>
+	                <p> 
+	                    <label for="content" class="uname">用户密码:</label>
+	                    <input id="usernamesignup" name="content" required="required" type="password" placeholder="请输入用户密码" />
+	                </p>
+	                <input type="submit"  value="提交" class="btn" style="margin-bottom: 30px;margin-left: 150px;margin-top: 20px;"/>
+	             </form>
+			</div>
+-->
+		</div>
+		<div id="footer">
+			<div>
+				<p>
+					@ copyright 2012. All rights reserved.
+				</p>
+			</div>
+		</div>
+	</div>
+</body>
+<script src="js/vue.js"></script>
+<script src="js/zepto.js"></script>
+<script>
+	var vue = new Vue({
+		el: '#background',
+		data: {
+			show: false,
+			showpwd:false,
+			pwd:'',
+			oldpwd:'',
+			pwdmsg:'',
+			comments:[],
+			commentid:'',
+			getCommentsUrl:"http://localhost:8080/GameDemo/showusercomments",
+			updatepwdUrl:"http://localhost:8080/GameDemo/updatepwd",
+			deletecomentUrl:"http://localhost:8080/GameDemo/deleteusercomment",
+			getUserUrl: 'http://localhost:8080/GameDemo/showoneuser',
+			registerUrl: 'http://localhost:8080/GameDemo/userregister',
+			loginUrl: 'http://localhost:8080/GameDemo/userlogin',
+			logoutUrl: 'http://localhost:8080/GameDemo/userlogout',
+			apiUrl: 'http://localhost:8080/GameDemo/userapi',
+			registerModel: {
+				userName: '',
+				pwd: ''
+			},
+			loginModel: {
+				userName: '',
+				pwd: '',
+				grant_type: 'password'
+			},
+			msg: '',
+			data:{
+				cid:'',				
+				uid:'',
+				pwd:'',
+				oldpwd:''
+			},
+			userLoginName: '',
+			userLoginId:'',
+			result: ''
+		},
+/*
+		ready: function() {
+			console.log("ready")
+			this.userLoginName = sessionStorage.getItem('userLoginName')
+			console.log(this.userLoginName)
+		},*/
+		mounted: function () {
+			console.log("mounted")
+			this.userLoginName = sessionStorage.getItem('userLoginName')
+			this.userLoginId = sessionStorage.getItem('userLoginId')
+			console.log(this.userLoginName)
+		  /*this.$nextTick(function () {
+		    // 代码保证 this.$el 在 document 中
+		    console.log("ready")
+			this.userLoginName = sessionStorage.getItem('userLoginName')
+			console.log(this.userLoginName)
+		  })*/
+		},
+		methods: {
+			deleteusercomment:function(cid){
+				var vm = this
+				vm.msg = ''
+				vm.result = ''
+				vm.data.uid = vm.userLoginId
+				vm.data.cid = cid
+				$.ajax({
+					url: vm.deletecomentUrl,
+					type: 'POST',
+					data:vm.data,
+					dataType: 'json',
+					success: function(data) {
+						vm.comments = data;
+						console.log(vm.comments)
+					},
+					error: vm.requestError
+				})
+			},
+			showpwddiv:function(){
+				this.showpwd = !this.showpwd
+			},
+			updatepwd:function(){
+				var vm = this
+				vm.msg = ''
+				vm.result = ''
+				vm.data.uid = vm.userLoginId
+				vm.data.pwd = vm.pwd
+				vm.data.oldpwd = vm.oldpwd
+				$.ajax({
+					url: vm.updatepwdUrl,
+					type: 'POST',
+					data:vm.data,
+					dataType: 'json',
+					success: function(data) {
+						if(data==null)
+							vm.pwdmsg="原密码错误！"
+						else{
+							vm.pwdmsg=''
+							vm.showpwd=false
+						}
+					},
+					error: vm.requestError
+				})
+			},
+			showcomments:function(){
+				this.getComments()
+				this.show = !this.show
+			},
+			getComments:function(){
+				var vm = this
+				vm.msg = ''
+				vm.result = ''
+				vm.data.uid = vm.userLoginId
+				$.ajax({
+					url: vm.getCommentsUrl,
+					type: 'POST',
+					data:vm.data,
+					dataType: 'json',
+					success: function(data) {
+						vm.comments = data;
+						console.log(vm.comments)
+					},
+					error: vm.requestError
+				})
+			},
+			register: function() {
+				var vm = this
+				vm.msg = ''
+				vm.result = ''
+
+				$.ajax({
+					url: vm.registerUrl,
+					type: 'POST',
+					dataType: 'json',
+					data: vm.registerModel,
+					success: function() {
+						vm.msg = '注册成功！'
+					},
+					error: vm.requestError
+				})
+			},
+			login: function() {
+				var vm = this
+				vm.msg = ''
+				vm.result = ''
+
+				$.ajax({
+					url: vm.loginUrl,
+					type: 'POST',
+					dataType: 'json',
+					data: vm.loginModel,
+					success: function(data) {
+						console.log(data.userName)
+						if(data.userName!=null && data.userName!=''){
+							vm.msg = '登录成功！'
+							vm.userLoginName = data.userName
+							vm.userLoginId = data.id
+							//有效期
+							sessionStorage.setItem('accessToken', 7200)
+							sessionStorage.setItem('userLoginName', vm.userLoginName)
+							sessionStorage.setItem('userLoginId', vm.userLoginId)
+						}else{
+							vm.msg = '登录失败！'
+						}
+					},
+					error: vm.requestError
+				})
+			},
+			logout: function() {
+				var vm = this
+				vm.msg = ''
+				vm.result = ''
+
+				$.ajax({
+					url: vm.logoutUrl,
+					type: 'POST',
+					dataType: 'json',
+					success: function(data) {
+
+						vm.msg = '注销成功！'
+						vm.userLoginName = ''
+						vm.userLoginId = ''
+						vm.loginModel.userName = ''
+						vm.loginModel.pwd = ''
+
+
+						sessionStorage.removeItem('userLoginId')
+						sessionStorage.removeItem('userLoginName')
+						sessionStorage.removeItem('accessToken')
+						
+					},
+					error: vm.requestError
+				})
+			},
+			callApi: function() {
+				var vm = this
+				vm.msg = ''
+				vm.result = ''
+
+				headers = {}
+				headers.Authorization = 'Bearer ' + sessionStorage.getItem('accessToken');
+
+				$.ajax({
+					type: 'get',
+					dataTye: 'json',
+					url: vm.apiUrl,
+					headers: headers,
+					success: function(data) {
+						vm.result = data
+					},
+					error: vm.requestError
+				})
+			},
+			requestError: function(xhr, errorType, error) {
+				this.msg = xhr.responseText
+			}
+		}
+	})
+</script>
+</html>
